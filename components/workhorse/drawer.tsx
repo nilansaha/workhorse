@@ -8,27 +8,26 @@ const makeJobPromise = (job: Job) =>
   new Promise<Job>((resolve) => setTimeout(() => resolve(job), 900));
 
 const Spinner = () => (
-  <>
-    <Icons.spinner
-      className="size-5"
-      style={{
-        color: "#A1A1AA",
-        animation: "workhorse-spin 1s linear infinite",
-      }}
-    />
-    <style>{`
-      @keyframes workhorse-spin {
-        to { transform: rotate(360deg); }
-      }
-    `}</style>
-  </>
+  <Icons.spinner className="size-5 text-[#A1A1AA] animate-spin" />
 );
 
-const statusBadge: Record<string, { bg: string; text: string; dot: string }> = {
-  pending: { bg: "rgba(161,161,170,0.08)", text: "#71717A", dot: "#555555" },
-  running: { bg: "rgba(217,179,75,0.1)", text: "#D9B34B", dot: "#D9B34B" },
-  done: { bg: "rgba(74,190,120,0.1)", text: "#4ABE78", dot: "#4ABE78" },
-  failed: { bg: "rgba(217,95,95,0.1)", text: "#D95F5F", dot: "#D95F5F" },
+const statusClasses: Record<string, { badge: string; dot: string }> = {
+  pending: {
+    badge: "bg-[rgba(161,161,170,0.08)] text-[#71717A]",
+    dot: "bg-[#555555]",
+  },
+  running: {
+    badge: "bg-[rgba(217,179,75,0.1)] text-[#D9B34B]",
+    dot: "bg-[#D9B34B]",
+  },
+  done: {
+    badge: "bg-[rgba(74,190,120,0.1)] text-[#4ABE78]",
+    dot: "bg-[#4ABE78]",
+  },
+  failed: {
+    badge: "bg-[rgba(217,95,95,0.1)] text-[#D95F5F]",
+    dot: "bg-[#D95F5F]",
+  },
 };
 
 const formatDate = (iso: string | null) => {
@@ -53,17 +52,17 @@ const colorizeJson = (value: unknown) => {
     (match, str, colon, kw, num) => {
       if (str && colon) {
         // object key
-        return `<span style="color:#86B390">${str}</span>${colon}`;
+        return `<span class="workhorse-json-key">${str}</span>${colon}`;
       }
       if (str) {
         // string value
-        return `<span style="color:#D9B34B">${str}</span>`;
+        return `<span class="workhorse-json-string">${str}</span>`;
       }
       if (kw) {
-        return `<span style="color:#D95F5F">${match}</span>`;
+        return `<span class="workhorse-json-keyword">${match}</span>`;
       }
       if (num) {
-        return `<span style="color:#7DB8D9">${match}</span>`;
+        return `<span class="workhorse-json-number">${match}</span>`;
       }
       return match;
     },
@@ -105,25 +104,20 @@ export const JobDrawer = ({ job, onClose }: DrawerProps) => {
       {/* Backdrop */}
       <div
         className="z-40 fixed inset-0 transition-opacity duration-200"
-        style={{ background: "transparent" }}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
-        className="top-0 right-0 bottom-0 z-50 fixed flex flex-col border-l w-[420px] transition-transform duration-200 ease-out"
-        style={{
-          background: "#191817",
-          borderColor: "#252422",
-          boxShadow: "-8px 0 24px rgba(0,0,0,0.4)",
-          transform: mounted ? "translateX(0)" : "translateX(100%)",
-        }}
+        className={`top-0 right-0 bottom-0 z-50 fixed flex flex-col border-l border-[#252422] bg-[#191817] w-[420px] shadow-[-8px_0_24px_rgba(0,0,0,0.4)] transition-transform duration-200 ease-out ${
+          mounted ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-6 z-10 cursor-pointer"
-          style={{ color: "#555555" }}
+          className="absolute top-4 right-6 z-10 cursor-pointer text-[#555555]"
         >
           <Icons.cross className="size-4" />
         </button>
@@ -164,33 +158,27 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
     : formatDelta(job.created_at, job.started_at);
   const startedToCompleted = formatDelta(job.started_at, job.completed_at);
 
+  const completedDotClass =
+    job.status === "done" ? "bg-[#4ABE78]" : "bg-[#555555]";
+  const cls = statusClasses[job.status];
+
   return (
     <>
       {/* Header */}
-      <div
-        className="flex flex-col gap-2 px-6 py-4 border-b"
-        style={{ borderColor: "#252422" }}
-      >
+      <div className="flex flex-col gap-2 px-6 py-4 border-b border-[#252422]">
         <div className="flex justify-between items-center pr-8">
-          <h2 className="font-semibold text-lg" style={{ color: "#DCDCDC" }}>
+          <h2 className="font-semibold text-lg text-[#DCDCDC]">
             {job.job_name}
           </h2>
         </div>
         <div className="flex items-center gap-1.5">
-          <p
-            className="text-sm"
-            style={{
-              color: "#A1A1AA",
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            }}
-          >
-            {job.id}
-          </p>
+          <p className="text-sm text-[#A1A1AA] font-mono">{job.id}</p>
           <button
+            type="button"
             onClick={copyId}
-            className="cursor-pointer"
-            style={{ color: copied ? "#A1A1AA" : "#555555" }}
+            className={`cursor-pointer ${
+              copied ? "text-[#A1A1AA]" : "text-[#555555]"
+            }`}
           >
             {copied ? (
               <Icons.check className="size-3" />
@@ -200,16 +188,9 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
           </button>
         </div>
         <span
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full w-fit font-medium text-xs"
-          style={{
-            background: statusBadge[job.status].bg,
-            color: statusBadge[job.status].text,
-          }}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full w-fit font-medium text-xs ${cls.badge}`}
         >
-          <span
-            className="rounded-full w-1.5 h-1.5"
-            style={{ background: statusBadge[job.status].dot }}
-          />
+          <span className={`rounded-full w-1.5 h-1.5 ${cls.dot}`} />
           {job.status === "done"
             ? "Complete"
             : job.status === "running"
@@ -225,15 +206,10 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
           {/* Triggered */}
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-center">
-              <span
-                className="rounded-full w-2 h-2 shrink-0"
-                style={{ background: "#555555" }}
-              />
+              <span className="rounded-full w-2 h-2 shrink-0 bg-[#555555]" />
             </div>
-            <p className="text-sm" style={{ color: "#A1A1AA" }}>
-              Triggered
-            </p>
-            <p className="ml-auto text-sm" style={{ color: "#A1A1AA" }}>
+            <p className="text-sm text-[#A1A1AA]">Triggered</p>
+            <p className="ml-auto text-sm text-[#A1A1AA]">
               {formatDate(job.created_at)}
             </p>
           </div>
@@ -244,45 +220,28 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
               {createdToRunAt && (
                 <div className="flex items-center gap-3 py-0.5">
                   <div className="flex justify-center w-2">
-                    <span
-                      className="w-px h-8"
-                      style={{ background: "#353432" }}
-                    />
+                    <span className="w-px h-8 bg-[#353432]" />
                   </div>
-                  <p
-                    className="font-mono text-sm"
-                    style={{ color: "#555555" }}
-                  >
+                  <p className="font-mono text-sm text-[#555555]">
                     {createdToRunAt}
                   </p>
                 </div>
               )}
               <div className="flex items-center gap-3">
                 <div className="flex flex-col items-center">
-                  <span
-                    className="rounded-full w-2 h-2 shrink-0"
-                    style={{ background: "#555555" }}
-                  />
+                  <span className="rounded-full w-2 h-2 shrink-0 bg-[#555555]" />
                 </div>
-                <p className="text-sm" style={{ color: "#A1A1AA" }}>
-                  Scheduled
-                </p>
-                <p className="ml-auto text-sm" style={{ color: "#A1A1AA" }}>
+                <p className="text-sm text-[#A1A1AA]">Scheduled</p>
+                <p className="ml-auto text-sm text-[#A1A1AA]">
                   {formatDate(job.run_at)}
                 </p>
               </div>
               {runAtToStarted && (
                 <div className="flex items-center gap-3 py-0.5">
                   <div className="flex justify-center w-2">
-                    <span
-                      className="w-px h-8"
-                      style={{ background: "#353432" }}
-                    />
+                    <span className="w-px h-8 bg-[#353432]" />
                   </div>
-                  <p
-                    className="font-mono text-sm"
-                    style={{ color: "#555555" }}
-                  >
+                  <p className="font-mono text-sm text-[#555555]">
                     {runAtToStarted}
                   </p>
                 </div>
@@ -294,9 +253,9 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
           {queuedToStarted && (
             <div className="flex items-center gap-3 py-0.5">
               <div className="flex justify-center w-2">
-                <span className="w-px h-8" style={{ background: "#353432" }} />
+                <span className="w-px h-8 bg-[#353432]" />
               </div>
-              <p className="font-mono text-sm" style={{ color: "#555555" }}>
+              <p className="font-mono text-sm text-[#555555]">
                 {queuedToStarted}
               </p>
             </div>
@@ -307,15 +266,10 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
             <>
               <div className="flex items-center gap-3">
                 <div className="flex flex-col items-center">
-                  <span
-                    className="rounded-full w-2 h-2 shrink-0"
-                    style={{ background: "#555555" }}
-                  />
+                  <span className="rounded-full w-2 h-2 shrink-0 bg-[#555555]" />
                 </div>
-                <p className="text-sm" style={{ color: "#A1A1AA" }}>
-                  Started
-                </p>
-                <p className="ml-auto text-sm" style={{ color: "#A1A1AA" }}>
+                <p className="text-sm text-[#A1A1AA]">Started</p>
+                <p className="ml-auto text-sm text-[#A1A1AA]">
                   {formatDate(job.started_at)}
                 </p>
               </div>
@@ -324,9 +278,9 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
               {startedToCompleted && (
                 <div className="flex items-center gap-3 py-0.5">
                   <div className="flex justify-center w-2">
-                    <span className="w-px h-8" style={{ background: "#353432" }} />
+                    <span className="w-px h-8 bg-[#353432]" />
                   </div>
-                  <p className="font-mono text-sm" style={{ color: "#555555" }}>
+                  <p className="font-mono text-sm text-[#555555]">
                     {startedToCompleted}
                   </p>
                 </div>
@@ -339,16 +293,11 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-center">
                 <span
-                  className="rounded-full w-2 h-2 shrink-0"
-                  style={{
-                    background: job.status === "done" ? "#4ABE78" : "#555555",
-                  }}
+                  className={`rounded-full w-2 h-2 shrink-0 ${completedDotClass}`}
                 />
               </div>
-              <p className="text-sm" style={{ color: "#A1A1AA" }}>
-                Completed
-              </p>
-              <p className="ml-auto text-sm" style={{ color: "#A1A1AA" }}>
+              <p className="text-sm text-[#A1A1AA]">Completed</p>
+              <p className="ml-auto text-sm text-[#A1A1AA]">
                 {formatDate(job.completed_at)}
               </p>
             </div>
@@ -357,10 +306,8 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
 
         {/* Attempts */}
         <div className="mb-6">
-          <p className="mb-1 text-sm" style={{ color: "#71717A" }}>
-            Attempts
-          </p>
-          <p className="text-base" style={{ color: "#DCDCDC" }}>
+          <p className="mb-1 text-sm text-[#71717A]">Attempts</p>
+          <p className="text-base text-[#DCDCDC]">
             {job.attempts}/{job.max_attempts}
           </p>
         </div>
@@ -368,13 +315,8 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
         {/* Error */}
         {job.last_error && (
           <div className="mb-6">
-            <p className="mb-2 text-sm" style={{ color: "#71717A" }}>
-              Error
-            </p>
-            <div
-              className="px-4 py-3 rounded-lg text-sm"
-              style={{ background: "#201F1D", color: "#EF4444" }}
-            >
+            <p className="mb-2 text-sm text-[#71717A]">Error</p>
+            <div className="px-4 py-3 rounded-lg text-sm bg-[#201F1D] text-[#EF4444]">
               {job.last_error}
             </div>
           </div>
@@ -382,19 +324,9 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
 
         {/* Payload */}
         <div>
-          <p
-            className="mb-2 font-medium text-sm"
-            style={{ color: "#A1A1AA" }}
-          >
-            Payload
-          </p>
+          <p className="mb-2 font-medium text-sm text-[#A1A1AA]">Payload</p>
           <pre
-            className="px-4 py-3 rounded-lg overflow-x-auto text-xs"
-            style={{
-              background: "#201F1D",
-              color: "#A1A1AA",
-              fontFamily: "monospace",
-            }}
+            className="px-4 py-3 rounded-lg overflow-x-auto text-xs font-mono bg-[#201F1D] text-[#A1A1AA]"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: input is our own JSON.stringify output, escaped via escapeHtml
             dangerouslySetInnerHTML={{ __html: colorizeJson(job.payload) }}
           />

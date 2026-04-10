@@ -18,6 +18,7 @@
 
 @theme inline {
   --font-inter: "Inter";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 html {
@@ -28,3 +29,11 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* JSON payload syntax highlighting classes. Used by the drawer's colorizeJson
+   helper which outputs <span class="workhorse-json-*"> tokens, so the colors
+   live here instead of inline HTML styles. */
+.workhorse-json-key     { color: #86b390; }
+.workhorse-json-string  { color: #d9b34b; }
+.workhorse-json-keyword { color: #d95f5f; }
+.workhorse-json-number  { color: #7db8d9; }

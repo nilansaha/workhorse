@@ -4,11 +4,23 @@ import { useState } from "react";
 import type { Job } from "./data";
 import { JobDrawer } from "./drawer";
 
-const statusBadge: Record<string, { bg: string; text: string; dot: string }> = {
-  pending: { bg: "rgba(161,161,170,0.08)", text: "#71717A", dot: "#52525B" },
-  running: { bg: "rgba(217,179,75,0.1)", text: "#D9B34B", dot: "#D9B34B" },
-  done: { bg: "rgba(74,190,120,0.1)", text: "#4ABE78", dot: "#4ABE78" },
-  failed: { bg: "rgba(217,95,95,0.1)", text: "#D95F5F", dot: "#D95F5F" },
+const statusClasses: Record<string, { badge: string; dot: string }> = {
+  pending: {
+    badge: "bg-[rgba(161,161,170,0.08)] text-[#71717A]",
+    dot: "bg-[#52525B]",
+  },
+  running: {
+    badge: "bg-[rgba(217,179,75,0.1)] text-[#D9B34B]",
+    dot: "bg-[#D9B34B]",
+  },
+  done: {
+    badge: "bg-[rgba(74,190,120,0.1)] text-[#4ABE78]",
+    dot: "bg-[#4ABE78]",
+  },
+  failed: {
+    badge: "bg-[rgba(217,95,95,0.1)] text-[#D95F5F]",
+    dot: "bg-[#D95F5F]",
+  },
 };
 
 const formatTime = (iso: string | null) => {
@@ -34,6 +46,22 @@ const dateOptions = [
   { value: "all", label: "All time", ms: null },
 ] as const;
 
+const chevronDown = (
+  <svg
+    className="size-3 text-[#71717A]"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+    />
+  </svg>
+);
+
 export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
   const [selected, setSelected] = useState<Job | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("any");
@@ -45,11 +73,13 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
-  const dateOption = dateOptions.find((o) => o.value === dateFilter) ?? dateOptions[3];
+  const dateOption =
+    dateOptions.find((o) => o.value === dateFilter) ?? dateOptions[3];
   const dateCutoff = dateOption.ms === null ? null : Date.now() - dateOption.ms;
   const filteredJobs = jobs.filter((j) => {
     if (statusFilter !== "any" && j.status !== statusFilter) return false;
-    if (dateCutoff !== null && new Date(j.created_at).getTime() < dateCutoff) return false;
+    if (dateCutoff !== null && new Date(j.created_at).getTime() < dateCutoff)
+      return false;
     return true;
   });
 
@@ -59,29 +89,23 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
   const failed = filteredJobs.filter((j) => j.status === "failed").length;
 
   const stats = [
-    { label: "Total", value: total, color: "#DCDCDC" },
-    { label: "Running", value: running, color: "#DCDCDC" },
-    { label: "Done", value: done, color: "#DCDCDC" },
-    { label: "Failed", value: failed, color: "#DCDCDC" },
+    { label: "Total", value: total },
+    { label: "Running", value: running },
+    { label: "Done", value: done },
+    { label: "Failed", value: failed },
   ];
 
   return (
-    <div className="px-8 py-8" style={{ color: "#DCDCDC" }}>
-
+    <div className="px-8 py-8 text-[#DCDCDC]">
       {/* Stats */}
       <div className="gap-4 grid grid-cols-4 mb-8">
         {stats.map((s) => (
           <div
             key={s.label}
-            className="px-5 py-4 border rounded-lg"
-            style={{ background: "#191817", borderColor: "#252422" }}
+            className="px-5 py-4 border border-[#252422] bg-[#191817] rounded-lg"
           >
-            <p className="mb-1 text-xs" style={{ color: "#71717A" }}>
-              {s.label}
-            </p>
-            <p className="font-semibold text-2xl" style={{ color: s.color }}>
-              {s.value}
-            </p>
+            <p className="mb-1 text-xs text-[#71717A]">{s.label}</p>
+            <p className="font-semibold text-2xl text-[#DCDCDC]">{s.value}</p>
           </div>
         ))}
       </div>
@@ -91,34 +115,19 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
         {/* Status filter */}
         <div className="relative">
           <button
+            type="button"
             onClick={() => setStatusOpen(!statusOpen)}
-            className="inline-flex items-center gap-2 border rounded-lg px-3 py-2 cursor-pointer transition-colors"
-            style={{ background: "#191817", borderColor: "#252422" }}
+            className="inline-flex items-center gap-2 border border-[#252422] bg-[#191817] rounded-lg px-3 py-2 cursor-pointer transition-colors"
           >
-            <span className="text-sm" style={{ color: "#71717A" }}>
-              Status:
-            </span>
-            <span className="text-sm font-medium" style={{ color: "#DCDCDC" }}>
+            <span className="text-sm text-[#71717A]">Status:</span>
+            <span className="text-sm font-medium text-[#DCDCDC]">
               {statusFilter === "any"
                 ? "Any"
                 : statusFilter === "done"
                   ? "Complete"
                   : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
             </span>
-            <svg
-              className="size-3"
-              style={{ color: "#71717A" }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m19.5 8.25-7.5 7.5-7.5-7.5"
-              />
-            </svg>
+            {chevronDown}
           </button>
           {statusOpen && (
             <>
@@ -126,41 +135,33 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
                 className="fixed inset-0 z-30"
                 onClick={() => setStatusOpen(false)}
               />
-              <div
-                className="absolute top-full left-0 mt-1 z-40 border rounded-lg py-1 min-w-[140px]"
-                style={{ background: "#191817", borderColor: "#252422" }}
-              >
+              <div className="absolute top-full left-0 mt-1 z-40 border border-[#252422] bg-[#191817] rounded-lg py-1 min-w-[140px]">
                 {[
                   { value: "any", label: "Any" },
                   { value: "pending", label: "Pending" },
                   { value: "running", label: "Running" },
                   { value: "done", label: "Complete" },
                   { value: "failed", label: "Failed" },
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setStatusFilter(opt.value);
-                      setStatusOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors"
-                    style={{
-                      color: statusFilter === opt.value ? "#DCDCDC" : "#A1A1AA",
-                      background:
-                        statusFilter === opt.value ? "#252422" : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (statusFilter !== opt.value)
-                        e.currentTarget.style.background = "#1F1E1C";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (statusFilter !== opt.value)
-                        e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+                ].map((opt) => {
+                  const active = statusFilter === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter(opt.value);
+                        setStatusOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                        active
+                          ? "bg-[#252422] text-[#DCDCDC]"
+                          : "text-[#A1A1AA] hover:bg-[#1F1E1C]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -169,30 +170,15 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
         {/* Date filter */}
         <div className="relative">
           <button
+            type="button"
             onClick={() => setDateOpen(!dateOpen)}
-            className="inline-flex items-center gap-2 border rounded-lg px-3 py-2 cursor-pointer transition-colors"
-            style={{ background: "#191817", borderColor: "#252422" }}
+            className="inline-flex items-center gap-2 border border-[#252422] bg-[#191817] rounded-lg px-3 py-2 cursor-pointer transition-colors"
           >
-            <span className="text-sm" style={{ color: "#71717A" }}>
-              Date:
-            </span>
-            <span className="text-sm font-medium" style={{ color: "#DCDCDC" }}>
+            <span className="text-sm text-[#71717A]">Date:</span>
+            <span className="text-sm font-medium text-[#DCDCDC]">
               {dateOption.label}
             </span>
-            <svg
-              className="size-3"
-              style={{ color: "#71717A" }}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m19.5 8.25-7.5 7.5-7.5-7.5"
-              />
-            </svg>
+            {chevronDown}
           </button>
           {dateOpen && (
             <>
@@ -200,35 +186,27 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
                 className="fixed inset-0 z-30"
                 onClick={() => setDateOpen(false)}
               />
-              <div
-                className="absolute top-full left-0 mt-1 z-40 border rounded-lg py-1 min-w-[160px]"
-                style={{ background: "#191817", borderColor: "#252422" }}
-              >
-                {dateOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setDateFilter(opt.value);
-                      setDateOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors"
-                    style={{
-                      color: dateFilter === opt.value ? "#DCDCDC" : "#A1A1AA",
-                      background:
-                        dateFilter === opt.value ? "#252422" : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (dateFilter !== opt.value)
-                        e.currentTarget.style.background = "#1F1E1C";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (dateFilter !== opt.value)
-                        e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+              <div className="absolute top-full left-0 mt-1 z-40 border border-[#252422] bg-[#191817] rounded-lg py-1 min-w-[160px]">
+                {dateOptions.map((opt) => {
+                  const active = dateFilter === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        setDateFilter(opt.value);
+                        setDateOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                        active
+                          ? "bg-[#252422] text-[#DCDCDC]"
+                          : "text-[#A1A1AA] hover:bg-[#1F1E1C]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -236,41 +214,23 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
       </div>
 
       {/* Table */}
-      <div
-        className="border rounded-lg overflow-hidden"
-        style={{ background: "#191817", borderColor: "#252422" }}
-      >
+      <div className="border border-[#252422] bg-[#191817] rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr style={{ borderBottom: "1px solid #252422" }}>
-              <th
-                className="px-5 py-2.5 font-medium text-xs text-left"
-                style={{ color: "#71717A" }}
-              >
+            <tr className="border-b border-[#252422]">
+              <th className="px-5 py-2.5 font-medium text-xs text-left text-[#71717A]">
                 Name
               </th>
-              <th
-                className="px-5 py-2.5 font-medium text-xs text-left"
-                style={{ color: "#71717A" }}
-              >
+              <th className="px-5 py-2.5 font-medium text-xs text-left text-[#71717A]">
                 Status
               </th>
-              <th
-                className="px-5 py-2.5 font-medium text-xs text-left"
-                style={{ color: "#71717A" }}
-              >
+              <th className="px-5 py-2.5 font-medium text-xs text-left text-[#71717A]">
                 Started
               </th>
-              <th
-                className="px-5 py-2.5 font-medium text-xs text-left"
-                style={{ color: "#71717A" }}
-              >
+              <th className="px-5 py-2.5 font-medium text-xs text-left text-[#71717A]">
                 Duration
               </th>
-              <th
-                className="px-5 py-2.5 font-medium text-xs text-left"
-                style={{ color: "#71717A" }}
-              >
+              <th className="px-5 py-2.5 font-medium text-xs text-left text-[#71717A]">
                 Created
               </th>
             </tr>
@@ -280,37 +240,27 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
               <tr>
                 <td
                   colSpan={5}
-                  className="px-5 py-12 text-center text-sm"
-                  style={{ color: "#71717A" }}
+                  className="px-5 py-12 text-center text-sm text-[#71717A]"
                 >
                   No jobs match these filters.
                 </td>
               </tr>
             )}
             {filteredJobs.map((job) => {
-              const badge = statusBadge[job.status];
+              const cls = statusClasses[job.status];
               return (
                 <tr
                   key={job.id}
                   onClick={() => setSelected(job)}
-                  className="transition-colors cursor-pointer"
-                  style={{ borderBottom: "1px solid #252422" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#1F1E1C")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
+                  className="transition-colors cursor-pointer border-b border-[#252422] hover:bg-[#1F1E1C]"
                 >
                   <td className="px-5 py-2.5 font-medium">{job.job_name}</td>
                   <td className="px-5 py-2.5">
                     <span
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-medium text-[13px]"
-                      style={{ background: badge.bg, color: badge.text }}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-medium text-[13px] ${cls.badge}`}
                     >
                       <span
-                        className="rounded-full w-1.5 h-1.5"
-                        style={{ background: badge.dot }}
+                        className={`rounded-full w-1.5 h-1.5 ${cls.dot}`}
                       />
                       {job.status === "done"
                         ? "Complete"
@@ -320,13 +270,13 @@ export const WorkhorseDashboard = ({ realJobs = [] }: { realJobs?: Job[] }) => {
                             job.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-5 py-2.5" style={{ color: "#A1A1AA" }}>
+                  <td className="px-5 py-2.5 text-[#A1A1AA]">
                     {formatTime(job.started_at)}
                   </td>
-                  <td className="px-5 py-2.5" style={{ color: "#A1A1AA" }}>
+                  <td className="px-5 py-2.5 text-[#A1A1AA]">
                     {formatDuration(job.duration_ms)}
                   </td>
-                  <td className="px-5 py-2.5" style={{ color: "#A1A1AA" }}>
+                  <td className="px-5 py-2.5 text-[#A1A1AA]">
                     {formatTime(job.created_at)}
                   </td>
                 </tr>

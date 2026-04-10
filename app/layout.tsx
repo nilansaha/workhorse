@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full">
-        <div className="flex min-h-screen" style={{ background: "#151413" }}>
+        <div className="flex min-h-screen bg-[#151413]">
           <WorkhorseSidebar />
           <div className="flex-1 min-w-0">{children}</div>
         </div>
