@@ -6,6 +6,7 @@ export type Job = {
   attempts: number;
   max_attempts: number;
   run_at: string;
+  scheduled: boolean;
   started_at: string | null;
   completed_at: string | null;
   duration_ms: number | null;

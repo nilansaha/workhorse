@@ -6,7 +6,21 @@ export const getJobById = async (id: string) => {
 };
 
 export const getRecentJobs = async (limit = 20) => {
-  return sql`SELECT * FROM workhorse ORDER BY created_at DESC LIMIT ${limit}`;
+  return sql`
+    SELECT * FROM workhorse
+    WHERE scheduled = false
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+};
+
+export const getScheduledJobs = async (limit = 50) => {
+  return sql`
+    SELECT * FROM workhorse
+    WHERE scheduled = true
+    ORDER BY run_at ASC, created_at DESC
+    LIMIT ${limit}
+  `;
 };
 
 export const getFailedJobs = async () => {

@@ -6,6 +6,7 @@ CREATE TABLE workhorse (
   attempts INT NOT NULL DEFAULT 0,
   max_attempts INT NOT NULL DEFAULT 3,
   run_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  scheduled BOOLEAN NOT NULL DEFAULT false,
   started_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
   duration_ms INT,

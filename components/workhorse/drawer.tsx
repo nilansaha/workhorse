@@ -152,7 +152,16 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const queuedToStarted = formatDelta(job.created_at, job.started_at);
+  const isScheduled = job.scheduled;
+  const createdToRunAt = isScheduled
+    ? formatDelta(job.created_at, job.run_at)
+    : null;
+  const runAtToStarted = isScheduled
+    ? formatDelta(job.run_at, job.started_at)
+    : null;
+  const queuedToStarted = isScheduled
+    ? null
+    : formatDelta(job.created_at, job.started_at);
   const startedToCompleted = formatDelta(job.started_at, job.completed_at);
 
   return (
@@ -229,7 +238,59 @@ const JobDrawerContent = ({ jobPromise }: { jobPromise: Promise<Job> }) => {
             </p>
           </div>
 
-          {/* Queue duration */}
+          {/* Scheduled step (only for explicitly scheduled jobs) */}
+          {isScheduled && (
+            <>
+              {createdToRunAt && (
+                <div className="flex items-center gap-3 py-0.5">
+                  <div className="flex justify-center w-2">
+                    <span
+                      className="w-px h-8"
+                      style={{ background: "#353432" }}
+                    />
+                  </div>
+                  <p
+                    className="font-mono text-sm"
+                    style={{ color: "#555555" }}
+                  >
+                    {createdToRunAt}
+                  </p>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col items-center">
+                  <span
+                    className="rounded-full w-2 h-2 shrink-0"
+                    style={{ background: "#555555" }}
+                  />
+                </div>
+                <p className="text-sm" style={{ color: "#A1A1AA" }}>
+                  Scheduled
+                </p>
+                <p className="ml-auto text-sm" style={{ color: "#A1A1AA" }}>
+                  {formatDate(job.run_at)}
+                </p>
+              </div>
+              {runAtToStarted && (
+                <div className="flex items-center gap-3 py-0.5">
+                  <div className="flex justify-center w-2">
+                    <span
+                      className="w-px h-8"
+                      style={{ background: "#353432" }}
+                    />
+                  </div>
+                  <p
+                    className="font-mono text-sm"
+                    style={{ color: "#555555" }}
+                  >
+                    {runAtToStarted}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Queue duration (only for non-scheduled jobs) */}
           {queuedToStarted && (
             <div className="flex items-center gap-3 py-0.5">
               <div className="flex justify-center w-2">

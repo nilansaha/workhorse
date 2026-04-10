@@ -5,5 +5,6 @@ export {
   getJobById,
   getJobStats,
   getRecentJobs,
+  getScheduledJobs,
   getStuckJobs,
 } from "./queries";
